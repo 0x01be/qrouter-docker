@@ -10,12 +10,13 @@ RUN git clone git://opencircuitdesign.com/qrouter /qrouter
 WORKDIR /qrouter
 
 RUN ./configure --prefix=/opt/qrouter/
-RUN make
-RUN make install
+# FIXME
+#RUN make
+#RUN make install
 
-FROM alpine:3.12.0
+#FROM alpine:3.12.0
 
-COPY --from=builder /opt/qrouter/ /opt/qrouter/
+#COPY --from=builder /opt/qrouter/ /opt/qrouter/
 
-ENV PATH /opt/qrouter/bin/:$PATH
+#ENV PATH /opt/qrouter/bin/:$PATH
 
