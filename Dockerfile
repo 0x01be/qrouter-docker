@@ -15,8 +15,6 @@ RUN make install
 
 FROM alpine:3.12.0
 
-#RUN apk add --no-cache --virtual runtime-dependencies \
-
 COPY --from=builder /opt/qrouter/ /opt/qrouter/
 
 ENV PATH /opt/qrouter/bin/:$PATH
