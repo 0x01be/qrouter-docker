@@ -1,25 +1,33 @@
-FROM alpine:3.12.0 as builder
+FROM alpine as builder
 
-RUN apk add --no-cache --virtual build-dependencies \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
+RUN apk add --no-cache --virtual qrouter-build-dependencies \
     git \
     build-base \
     tk-dev
 
-RUN git clone git://opencircuitdesign.com/qrouter /qrouter
+ENV QROUTER_REVISION master
+RUN git clone --depth 1 --branch ${QROUTER_REVISION} git://opencircuitdesign.com/qrouter /qrouter
 
 WORKDIR /qrouter
 
 RUN ./configure --prefix=/opt/qrouter/
-# FIXME
-#RUN make
-#RUN make install
+RUN make
+RUN make install
 
-#FROM alpine:3.12.0
+FROM alpine
 
-#COPY --from=builder /opt/qrouter/ /opt/qrouter/
+COPY --from=builder /opt/qrouter/ /opt/qrouter/
 
-#ENV PATH /opt/qrouter/bin/:$PATH
+RUN apk add --no-cache --virtual qrouter-runtime-dependencies \
+    tk
+
+RUN adduser -D -u 1000 qrouter
+
+WORKDIR /workspace
+
+RUN chown qrouter:qrouter /workspace
+
+USER qrouter
+
+ENV PATH /opt/qrouter/bin/:$PATH
 
