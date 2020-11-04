@@ -1,12 +1,12 @@
-FROM alpine as builder
+FROM alpine as build
 
 RUN apk add --no-cache --virtual qrouter-build-dependencies \
     git \
     build-base \
     tk-dev
 
-ENV QROUTER_REVISION master
-RUN git clone --depth 1 --branch ${QROUTER_REVISION} git://opencircuitdesign.com/qrouter /qrouter
+ENV REVISION=master
+RUN git clone --depth 1 --branch ${REVISION} git://opencircuitdesign.com/qrouter /qrouter
 
 WORKDIR /qrouter
 
@@ -16,18 +16,19 @@ RUN make install
 
 FROM alpine
 
-COPY --from=builder /opt/qrouter/ /opt/qrouter/
+COPY --from=build /opt/qrouter/ /opt/qrouter/
 
 RUN apk add --no-cache --virtual qrouter-runtime-dependencies \
     tk
 
-RUN adduser -D -u 1000 qrouter
+ENV UID=1000 \
+    USER=qrouter \
+    WORKSPACE=/workspace
+RUN adduser -D -u ${UID} ${USER} &&\
+    mkdir -p ${WORKSPACE} &&\
+    chown -R ${USER}:${USER} ${WORKSPACE}
 
-WORKDIR /workspace
-
-RUN chown qrouter:qrouter /workspace
-
-USER qrouter
-
-ENV PATH /opt/qrouter/bin/:$PATH
+USER ${USER}
+WORKDIR ${WORKSPACE}
+ENV PATH=${PATH}:/opt/qrouter/bin/
 
